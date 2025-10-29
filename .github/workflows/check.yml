@@ -13,5 +13,5 @@ jobs:
         with:
           python-version: "3.13.2"
       - run: pip install uv
-      - run: uv sync --group check
+      - run: uv sync --group check --extra cpu
       - run: uv run python scripts/check.py
