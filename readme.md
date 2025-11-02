@@ -4,8 +4,19 @@ Standalone CLI tool extracted from [Musetric](https://github.com/popelenkow/Muse
 
 ## Installation
 
-Install the package directly from the latest GitHub release (Python 3.13.2):\
-`pip install https://github.com/popelenkow/musetric-toolkit/releases/latest/download/musetric_toolkit-0.1.0-py3-none-any.whl`
+Install the package directly from the latest GitHub release (Python 3.13.2):
+```bash
+pip install https://github.com/popelenkow/musetric-toolkit/releases/download/v0.0.1/musetric_toolkit-0.0.1-1cpu-py3-none-any.whl
+# Or for CUDA
+pip install https://github.com/popelenkow/musetric-toolkit/releases/download/v0.0.1/musetric_toolkit-0.0.1-1cuda-py3-none-any.whl
+```
+
+For local development, install the CLI in editable mode with [`uv`](https://github.com/astral-sh/uv):
+```bash
+uv tool install --python 3.13.2 --editable ".[cpu]"
+# Or for CUDA
+uv tool install --python 3.13.2 --editable ".[cuda]"
+```
 
 ## CLI Usage
 
@@ -30,7 +41,15 @@ musetric-separate-audio \
 
 ## Dependencies
 
-- **BSRoformer Neural Network:** https://github.com/lucidrains/BS-RoFormer (MIT) — audio source separation model.
+### BSRoformer Neural Network
+
+- **Source:** https://github.com/lucidrains/BS-RoFormer by Phil Wang (MIT)
+- **Usage:** Audio source separation model (adapted)
+
+### Research & Development Support
+
+- **Thanks to:** https://github.com/nomadkaraoke/python-audio-separator (MIT)
+- **Usage:** Research tool that helped validate BSRoformer approach and integration patterns
 
 ## License
 
