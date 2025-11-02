@@ -6,9 +6,9 @@ Standalone CLI tool extracted from [Musetric](https://github.com/popelenkow/Muse
 
 Install the package directly from the latest GitHub release (Python 3.13.2):
 ```bash
-pip install https://github.com/popelenkow/musetric-toolkit/releases/download/v0.0.1/musetric_toolkit-0.0.1-1cpu-py3-none-any.whl
+uv tool install --python 3.13.2 https://github.com/popelenkow/musetric-toolkit/releases/download/v0.0.1/musetric_toolkit-0.0.1-1cpu-py3-none-any.whl
 # Or for CUDA
-pip install https://github.com/popelenkow/musetric-toolkit/releases/download/v0.0.1/musetric_toolkit-0.0.1-1cuda-py3-none-any.whl
+uv tool install --python 3.13.2 https://github.com/popelenkow/musetric-toolkit/releases/download/v0.0.1/musetric_toolkit-0.0.1-1cuda-py3-none-any.whl
 ```
 
 For local development, install the CLI in editable mode with [`uv`](https://github.com/astral-sh/uv):
