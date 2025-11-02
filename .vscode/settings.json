@@ -1,0 +1,28 @@
+{
+  "editor.detectIndentation": false,
+  "editor.insertSpaces": true,
+  "editor.renderWhitespace": "all",
+  "editor.tabCompletion": "on",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.extraPaths": [
+    "./.venv/Lib/site-packages",
+    "./musetricBackendWorkers"
+  ],
+  "files.eol": "\n",
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.egg-info": true
+  },
+  "files.watcherExclude": {
+    "**/.venv/**": true,
+    "**/dist/**": true,
+    "**/tmp/**": true,
+    "**/.cache/**": true
+  },
+  "search.exclude": {
+    "**/.venv/**": true,
+    "**/dist/**": true,
+    "**/tmp/**": true,
+    "**/.cache/**": true
+  }
+}
