@@ -2,7 +2,9 @@ import argparse
 import logging
 import sys
 
+from musetricBackendWorkers.common import envs
 from musetricBackendWorkers.common.logger import setupLogging
+from musetricBackendWorkers.common.modelFiles import ensureModelFiles
 from musetricBackendWorkers.separateAudio.bsRoformerSeparator import BSRoformerSeparator
 from musetricBackendWorkers.separateAudio.systemInfo import (
     ensureFfmpeg,
@@ -25,16 +27,6 @@ def parseArguments():
         "--instrumental-path",
         required=True,
         help="Path for instrumental output file",
-    )
-    parser.add_argument(
-        "--model-path",
-        required=True,
-        help="Path to the model checkpoint file",
-    )
-    parser.add_argument(
-        "--config-path",
-        required=True,
-        help="Path to the model configuration file",
     )
     parser.add_argument(
         "--sample-rate",
@@ -63,13 +55,17 @@ def main() -> None:
     setupLogging(args.log_level)
 
     try:
+        ensureModelFiles(
+            envs.model_checkpoint_path,
+            envs.model_config_path,
+        )
         ensureFfmpeg()
         printAccelerationInfo()
         setupTorchOptimization()
 
         separator = BSRoformerSeparator(
-            modelPath=args.model_path,
-            modelConfigPath=args.config_path,
+            modelCheckpointPath=envs.model_checkpoint_path,
+            modelConfigPath=envs.model_config_path,
             sampleRate=args.sample_rate,
             outputFormat=args.output_format,
         )

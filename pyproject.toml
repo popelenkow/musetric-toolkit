@@ -10,6 +10,7 @@ dependencies = [
     "numpy==2.3.4",
     "numba==0.62.1",
     "PyYAML==6.0.3",
+    "platformdirs==4.5.0",
 ]
 
 [project.optional-dependencies]
@@ -24,6 +25,7 @@ cuda = [
 
 [project.scripts]
 musetric-separate = "musetricBackendWorkers.separateAudio.index:main"
+musetric-download-models = "musetricBackendWorkers.downloadModels.index:main"
 
 [dependency-groups]
 check = [

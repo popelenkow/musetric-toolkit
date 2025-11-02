@@ -1,4 +1,5 @@
 import tempfile
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -17,12 +18,12 @@ from musetricBackendWorkers.separateAudio.roformer.bsRoformer import BSRoformer
 class BSRoformerSeparator:
     def __init__(
         self,
-        modelPath: str,
-        modelConfigPath: str,
+        modelCheckpointPath: Path,
+        modelConfigPath: Path,
         sampleRate: int,
         outputFormat: str,
     ):
-        self.modelPath = modelPath
+        self.modelCheckpointPath = modelCheckpointPath
         self.modelConfigPath = modelConfigPath
         self.sampleRate = sampleRate
         self.outputFormat = outputFormat
@@ -52,7 +53,9 @@ class BSRoformerSeparator:
 
         self.config = self._loadConfig()
         model = BSRoformer(**vars(self.config.model))
-        checkpoint = torch.load(self.modelPath, map_location="cpu", weights_only=True)
+        checkpoint = torch.load(
+            self.modelCheckpointPath, map_location="cpu", weights_only=True
+        )
         model.load_state_dict(checkpoint)
         self.model = model.to(self.device)
         self.model.eval()
