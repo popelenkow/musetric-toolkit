@@ -9,9 +9,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        variant: [cpu, cuda]
     steps:
       - uses: actions/checkout@v4
       - id: version
@@ -22,20 +19,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13.2"
-      - run: pip install uv build
-      - run: |
-          uv pip install --system -e .[${{ matrix.variant }}]
-          python -m build --wheel
-          cd dist
-          for wheel in *.whl; do
-            if [[ "$wheel" != *"-1${{ matrix.variant }}-py3-"* ]]; then
-              new_name="${wheel/-py3-/-1${{ matrix.variant }}-py3-}"
-              mv "$wheel" "$new_name"
-            fi
-          done
+      - run: pip install build
+      - run: python -m build --wheel
       - uses: actions/upload-artifact@v4
         with:
-          name: wheel-${{ matrix.variant }}
+          name: wheel
           path: dist/*.whl
 
   release:
@@ -44,11 +32,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: wheel-cpu
-          path: ./dist
-      - uses: actions/download-artifact@v4
-        with:
-          name: wheel-cuda
+          name: wheel
           path: ./dist
       - uses: softprops/action-gh-release@v1
         with:
