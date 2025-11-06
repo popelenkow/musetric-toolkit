@@ -5,22 +5,14 @@ description = "Musetric Toolkit"
 authors = [{ name = "Vladlen Popelenkov", email = "popelenkow@gmail.com" }]
 requires-python = "==3.13.2"
 dependencies = [
+    "torch==2.8.0",
+    "torchaudio==2.8.0",
     "rotary-embedding-torch==0.8.9",
     "einops==0.8.1",
     "numpy==2.3.4",
     "numba==0.62.1",
     "PyYAML==6.0.3",
     "platformdirs==4.5.0",
-]
-
-[project.optional-dependencies]
-cpu = [
-    "torch==2.8.0",
-    "torchaudio==2.8.0",
-]
-cuda = [
-    "torch==2.8.0",
-    "torchaudio==2.8.0",
 ]
 
 [project.scripts]
@@ -31,36 +23,8 @@ musetric-download-models = "musetricBackendWorkers.downloadModels.index:main"
 check = [
     "black==25.9.0",
     "isort==7.0.0",
-    "ruff==0.14.3"
+    "ruff==0.14.3",
 ]
-
-[tool.uv]
-conflicts = [
-  [
-    { extra = "cpu" },
-    { extra = "cuda" },
-  ],
-]
-
-[tool.uv.sources]
-torch = [
-  { index = "cpu-index", extra = "cpu" },
-  { index = "cuda-index", extra = "cuda" },
-]
-torchaudio = [
-  { index = "cpu-index", extra = "cpu" },
-  { index = "cuda-index", extra = "cuda" },
-]
-
-[[tool.uv.index]]
-name = "cpu-index"
-url = "https://download.pytorch.org/whl/cpu"
-explicit = true
-
-[[tool.uv.index]]
-name = "cuda-index"
-url = "https://download.pytorch.org/whl/cu129"
-explicit = true
 
 [build-system]
 requires = ["hatchling"]
