@@ -10,7 +10,7 @@ uv tool install --python 3.13.2 \
   --default-index https://pypi.org/simple \
   --index https://download.pytorch.org/whl/cpu \  # --index https://download.pytorch.org/whl/cu129 \
   --index-strategy unsafe-best-match \
-  https://github.com/popelenkow/musetric-toolkit/releases/download/v0.0.3/musetric_toolkit-0.0.3-py3-none-any.whl
+  https://github.com/popelenkow/musetric-toolkit/releases/download/v0.0.4/musetric_toolkit-0.0.4-py3-none-any.whl
 
 musetric-download-models
 ```
@@ -36,17 +36,24 @@ musetric-separate \
   --output-format wav  # export format (e.g. wav)
 ```
 
+```bash
+musetric-transcribe \
+  --audio-path /path/to/vocals.wav \  # input vocal audio file
+  --result-path /path/to/transcription.json \  # output JSON file
+```
+
 ## Dependencies
 
 ### BSRoformer Neural Network
 
 - **Source:** https://github.com/lucidrains/BS-RoFormer by Phil Wang (MIT)
 - **Usage:** Audio source separation model (adapted)
+- **Thanks to:** https://github.com/nomadkaraoke/python-audio-separator (MIT) — research tool that helped validate the BSRoformer approach and integration patterns
 
-### Research & Development Support
+### WhisperX Speech Transcription
 
-- **Thanks to:** https://github.com/nomadkaraoke/python-audio-separator (MIT)
-- **Usage:** Research tool that helped validate BSRoformer approach and integration patterns
+- **Source:** https://github.com/m-bain/whisperX by Max Bain (MIT)
+- **Usage:** Speech-to-text + word-level alignment for `musetric-transcribe`
 
 ## License
 
