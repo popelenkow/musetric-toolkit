@@ -9,15 +9,17 @@ dependencies = [
     "torchaudio==2.8.0",
     "rotary-embedding-torch==0.8.9",
     "einops==0.8.1",
-    "numpy==2.3.4",
+    "numpy==2.2.6",
     "numba==0.62.1",
     "PyYAML==6.0.3",
     "platformdirs==4.5.0",
+    "whisperx==3.7.4",
 ]
 
 [project.scripts]
 musetric-separate = "musetricBackendWorkers.separateAudio.index:main"
 musetric-download-models = "musetricBackendWorkers.downloadModels.index:main"
+musetric-transcribe = "musetricBackendWorkers.transcribeAudio.index:main"
 
 [dependency-groups]
 check = [
