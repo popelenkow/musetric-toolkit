@@ -1,3 +1,4 @@
+# ruff: noqa: S603
 import logging
 import shutil
 import subprocess

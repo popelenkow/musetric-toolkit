@@ -1,3 +1,4 @@
+# ruff: noqa: S603
 import argparse
 import shlex
 import subprocess

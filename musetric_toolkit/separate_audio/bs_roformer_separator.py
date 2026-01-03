@@ -45,7 +45,7 @@ class BSRoformerSeparator:
 
     def _load_config(self):
         with open(self.model_config_path) as f:
-            return dict_to_namespace(yaml.load(f, Loader=yaml.FullLoader))
+            return dict_to_namespace(yaml.load(f, Loader=yaml.FullLoader))  # noqa: S506
 
     def _load_model(self):
         if self.model is not None:

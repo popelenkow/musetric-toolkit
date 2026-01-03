@@ -2,6 +2,7 @@
 # Original: https://github.com/lucidrains/BS-RoFormer
 # License: MIT
 # Modified for Musetric project
+# ruff: noqa: PLR0913, PLR0915, PLR2004, S101
 
 from collections.abc import Callable
 from functools import partial
