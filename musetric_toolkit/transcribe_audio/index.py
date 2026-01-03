@@ -4,12 +4,12 @@ import re
 import sys
 from pathlib import Path
 
-from musetricBackendWorkers.common.logger import redirectStdStreams, setupLogging
-from musetricBackendWorkers.transcribeAudio.cli import parse_arguments
-from musetricBackendWorkers.transcribeAudio.response_builder import (
+from musetric_toolkit.common.logger import redirectStdStreams, setupLogging
+from musetric_toolkit.transcribe_audio.cli import parse_arguments
+from musetric_toolkit.transcribe_audio.response_builder import (
     build_payload_segments,
 )
-from musetricBackendWorkers.transcribeAudio.whisperx_runner import (
+from musetric_toolkit.transcribe_audio.whisperx_runner import (
     transcribe_with_whisperx,
 )
 

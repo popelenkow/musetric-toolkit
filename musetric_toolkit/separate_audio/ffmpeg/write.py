@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from musetricBackendWorkers.separateAudio.ffmpeg.runner import runFfmpeg
+from musetric_toolkit.separate_audio.ffmpeg.runner import runFfmpeg
 
 
 def writeAudioFile(
