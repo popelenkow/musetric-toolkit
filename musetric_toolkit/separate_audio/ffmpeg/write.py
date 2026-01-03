@@ -2,41 +2,44 @@ import os
 
 import numpy as np
 
-from musetric_toolkit.separate_audio.ffmpeg.runner import runFfmpeg
+from musetric_toolkit.separate_audio.ffmpeg.runner import run_ffmpeg
 
 
-def writeAudioFile(
-    outputPath: str, audioTimeChannels: np.ndarray, sampleRate: int, outputFormat: str
+def write_audio_file(
+    output_path: str,
+    audio_time_channels: np.ndarray,
+    sample_rate: int,
+    output_format: str,
 ) -> None:
-    if audioTimeChannels.dtype != np.float32:
-        audioTimeChannels = audioTimeChannels.astype(np.float32, order="C")
+    if audio_time_channels.dtype != np.float32:
+        audio_time_channels = audio_time_channels.astype(np.float32, order="C")
 
-    ffmpegCommand = [
+    ffmpeg_command = [
         "ffmpeg",
         "-f",
         "f32le",
         "-ar",
-        str(sampleRate),
+        str(sample_rate),
         "-ac",
-        str(audioTimeChannels.shape[1]),
+        str(audio_time_channels.shape[1]),
         "-i",
         "-",
     ]
 
-    if outputFormat == "flac":
-        ffmpegCommand += ["-c:a", "flac", "-sample_fmt", "s32"]
-    elif outputFormat == "wav":
-        ffmpegCommand += ["-c:a", "pcm_f32le"]
+    if output_format == "flac":
+        ffmpeg_command += ["-c:a", "flac", "-sample_fmt", "s32"]
+    elif output_format == "wav":
+        ffmpeg_command += ["-c:a", "pcm_f32le"]
 
-    ffmpegCommand += ["-f", outputFormat, "-y", outputPath]
+    ffmpeg_command += ["-f", output_format, "-y", output_path]
 
-    pcmInterleavedBytes = audioTimeChannels.tobytes(order="C")
+    pcm_interleaved_bytes = audio_time_channels.tobytes(order="C")
 
-    os.makedirs(os.path.dirname(outputPath), exist_ok=True)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-    runFfmpeg(
-        ffmpegCommand,
-        inputBytes=pcmInterleavedBytes,
-        captureStdout=False,
+    run_ffmpeg(
+        ffmpeg_command,
+        input_bytes=pcm_interleaved_bytes,
+        capture_stdout=False,
         context="ffmpeg failed to write audio",
     )

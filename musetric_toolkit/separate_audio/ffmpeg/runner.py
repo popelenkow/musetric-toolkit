@@ -2,7 +2,7 @@ import logging
 import subprocess
 from typing import Iterable, Sequence
 
-errorKeywords: tuple[str, ...] = (
+error_keywords: tuple[str, ...] = (
     "error",
     "fail",
     "invalid",
@@ -11,58 +11,58 @@ errorKeywords: tuple[str, ...] = (
     "not found",
     "illegal",
 )
-warningKeywords: tuple[str, ...] = ("warn", "deprecated", "non monotone")
+warning_keywords: tuple[str, ...] = ("warn", "deprecated", "non monotone")
 
 
-def _iterLines(output: str) -> Iterable[str]:
-    for rawLine in output.splitlines():
-        line = rawLine.strip()
+def _iter_lines(output: str) -> Iterable[str]:
+    for raw_line in output.splitlines():
+        line = raw_line.strip()
         if line:
             yield line
 
 
-def _logFfmpegOutput(stderrText: str) -> tuple[str | None, str | None]:
+def _log_ffmpeg_output(stderr_text: str) -> tuple[str | None, str | None]:
     logger = logging.getLogger(__name__)
-    lastError: str | None = None
-    lastWarning: str | None = None
+    last_error: str | None = None
+    last_warning: str | None = None
 
-    for line in _iterLines(stderrText):
-        lowerLine = line.lower()
-        if any(keyword in lowerLine for keyword in errorKeywords):
+    for line in _iter_lines(stderr_text):
+        lower_line = line.lower()
+        if any(keyword in lower_line for keyword in error_keywords):
             logger.error("ffmpeg: %s", line)
-            lastError = line
-        elif any(keyword in lowerLine for keyword in warningKeywords):
+            last_error = line
+        elif any(keyword in lower_line for keyword in warning_keywords):
             logger.warning("ffmpeg: %s", line)
-            lastWarning = line
+            last_warning = line
         else:
             logger.debug("ffmpeg: %s", line)
 
-    return lastError, lastWarning
+    return last_error, last_warning
 
 
-def runFfmpeg(
+def run_ffmpeg(
     command: Sequence[str],
     *,
-    inputBytes: bytes | None = None,
-    captureStdout: bool = False,
+    input_bytes: bytes | None = None,
+    capture_stdout: bool = False,
     context: str,
 ) -> bytes:
     process = subprocess.run(
         command,
-        input=inputBytes,
-        stdout=subprocess.PIPE if captureStdout else subprocess.DEVNULL,
+        input=input_bytes,
+        stdout=subprocess.PIPE if capture_stdout else subprocess.DEVNULL,
         stderr=subprocess.PIPE,
         check=False,
     )
 
-    stderrBytes = process.stderr or b""
-    stderrText = stderrBytes.decode("utf-8", errors="ignore")
-    lastError, lastWarning = _logFfmpegOutput(stderrText)
+    stderr_bytes = process.stderr or b""
+    stderr_text = stderr_bytes.decode("utf-8", errors="ignore")
+    last_error, last_warning = _log_ffmpeg_output(stderr_text)
 
     if process.returncode != 0:
-        summary = lastError or lastWarning
+        summary = last_error or last_warning
         if not summary:
             summary = f"Process exited with code {process.returncode}"
         raise RuntimeError(f"{context}: {summary}")
 
-    return process.stdout if captureStdout else b""
+    return process.stdout if capture_stdout else b""

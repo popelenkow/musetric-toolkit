@@ -8,86 +8,88 @@ import yaml
 from musetric_toolkit.separate_audio import utils
 from musetric_toolkit.separate_audio.bs_roformer_utils import (
     AudioProcessor,
-    dictToNamespace,
+    dict_to_namespace,
 )
-from musetric_toolkit.separate_audio.ffmpeg.read import readAudioFile
-from musetric_toolkit.separate_audio.ffmpeg.write import writeAudioFile
+from musetric_toolkit.separate_audio.ffmpeg.read import read_audio_file
+from musetric_toolkit.separate_audio.ffmpeg.write import write_audio_file
 from musetric_toolkit.separate_audio.roformer.bs_roformer import BSRoformer
 
 
 class BSRoformerSeparator:
     def __init__(
         self,
-        modelCheckpointPath: Path,
-        modelConfigPath: Path,
-        sampleRate: int,
-        outputFormat: str,
+        model_checkpoint_path: Path,
+        model_config_path: Path,
+        sample_rate: int,
+        output_format: str,
     ):
-        self.modelCheckpointPath = modelCheckpointPath
-        self.modelConfigPath = modelConfigPath
-        self.sampleRate = sampleRate
-        self.outputFormat = outputFormat
-        self.device = self._getDevice()
+        self.model_checkpoint_path = model_checkpoint_path
+        self.model_config_path = model_config_path
+        self.sample_rate = sample_rate
+        self.output_format = output_format
+        self.device = self._get_device()
         self.model = None
         self.config = None
-        self.audioProcessor = None
+        self.audio_processor = None
 
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
             torch.backends.cudnn.benchmark = True
 
-    def _getDevice(self) -> torch.device:
+    def _get_device(self) -> torch.device:
         if torch.cuda.is_available():
             return torch.device("cuda")
         if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
             return torch.device("mps")
         return torch.device("cpu")
 
-    def _loadConfig(self):
-        with open(self.modelConfigPath, "r") as f:
-            return dictToNamespace(yaml.load(f, Loader=yaml.FullLoader))
+    def _load_config(self):
+        with open(self.model_config_path, "r") as f:
+            return dict_to_namespace(yaml.load(f, Loader=yaml.FullLoader))
 
-    def _loadModel(self):
+    def _load_model(self):
         if self.model is not None:
             return
 
-        self.config = self._loadConfig()
+        self.config = self._load_config()
         model = BSRoformer(**vars(self.config.model))
         checkpoint = torch.load(
-            self.modelCheckpointPath, map_location="cpu", weights_only=True
+            self.model_checkpoint_path, map_location="cpu", weights_only=True
         )
         model.load_state_dict(checkpoint)
         self.model = model.to(self.device)
         self.model.eval()
 
-        self.audioProcessor = AudioProcessor(self.device, self.config)
+        self.audio_processor = AudioProcessor(self.device, self.config)
 
-    def _deMix(self, mix: np.ndarray) -> dict:
-        return self.audioProcessor.demix(mix, self.model)
+    def _demix(self, mix: np.ndarray) -> dict:
+        return self.audio_processor.demix(mix, self.model)
 
-    def separateAudio(
-        self, sourcePath: str, vocalPath: str, instrumentalPath: str
+    def separate_audio(
+        self, source_path: str, vocal_path: str, instrumental_path: str
     ) -> None:
         with tempfile.TemporaryDirectory():
-            self._loadModel()
+            self._load_model()
 
             mixture = utils.normalize(
-                readAudioFile(sourcePath, self.sampleRate, 2),
-                maxPeak=0.9,
-                minPeak=0.0,
+                read_audio_file(source_path, self.sample_rate, 2),
+                max_peak=0.9,
+                min_peak=0.0,
             )
 
-            separatedSources = self._deMix(mixture)
+            separated_sources = self._demix(mixture)
 
-            for stemName, sourceAudio in separatedSources.items():
-                normalizedSource = utils.normalize(
-                    sourceAudio, maxPeak=0.9, minPeak=0.0
+            for stem_name, source_audio in separated_sources.items():
+                normalized_source = utils.normalize(
+                    source_audio, max_peak=0.9, min_peak=0.0
                 ).T
-                outputPath = vocalPath if "Vocal" in stemName else instrumentalPath
-                if outputPath and ("Vocal" in stemName or "Instrumental" in stemName):
-                    writeAudioFile(
-                        outputPath,
-                        normalizedSource.astype(np.float32),
-                        self.sampleRate,
-                        self.outputFormat,
+                output_path = vocal_path if "Vocal" in stem_name else instrumental_path
+                if output_path and (
+                    "Vocal" in stem_name or "Instrumental" in stem_name
+                ):
+                    write_audio_file(
+                        output_path,
+                        normalized_source.astype(np.float32),
+                        self.sample_rate,
+                        self.output_format,
                     )

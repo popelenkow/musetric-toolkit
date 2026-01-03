@@ -3,19 +3,17 @@ import logging
 import sys
 
 from musetric_toolkit.common import envs
-from musetric_toolkit.common.logger import setupLogging
-from musetric_toolkit.common.model_files import ensureModelFiles
-from musetric_toolkit.separate_audio.bs_roformer_separator import (
-    BSRoformerSeparator,
-)
+from musetric_toolkit.common.logger import setup_logging
+from musetric_toolkit.common.model_files import ensure_model_files
+from musetric_toolkit.separate_audio.bs_roformer_separator import BSRoformerSeparator
 from musetric_toolkit.separate_audio.system_info import (
-    ensureFfmpeg,
-    printAccelerationInfo,
-    setupTorchOptimization,
+    ensure_ffmpeg,
+    print_acceleration_info,
+    setup_torch_optimization,
 )
 
 
-def parseArguments():
+def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Separate audio into vocal and instrumental parts"
     )
@@ -52,29 +50,29 @@ def parseArguments():
 
 
 def main() -> None:
-    args = parseArguments()
+    args = parse_arguments()
 
-    setupLogging(args.log_level)
+    setup_logging(args.log_level)
 
     try:
-        ensureModelFiles(
+        ensure_model_files(
             envs.model_checkpoint_path,
             envs.model_config_path,
         )
-        ensureFfmpeg()
-        printAccelerationInfo()
-        setupTorchOptimization()
+        ensure_ffmpeg()
+        print_acceleration_info()
+        setup_torch_optimization()
 
         separator = BSRoformerSeparator(
-            modelCheckpointPath=envs.model_checkpoint_path,
-            modelConfigPath=envs.model_config_path,
-            sampleRate=args.sample_rate,
-            outputFormat=args.output_format,
+            model_checkpoint_path=envs.model_checkpoint_path,
+            model_config_path=envs.model_config_path,
+            sample_rate=args.sample_rate,
+            output_format=args.output_format,
         )
-        separator.separateAudio(
-            sourcePath=args.source_path,
-            vocalPath=args.vocal_path,
-            instrumentalPath=args.instrumental_path,
+        separator.separate_audio(
+            source_path=args.source_path,
+            vocal_path=args.vocal_path,
+            instrumental_path=args.instrumental_path,
         )
     except Exception as error:
         logging.error("Audio separation failed: %s", error)

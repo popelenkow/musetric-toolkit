@@ -1,15 +1,19 @@
 import numpy as np
 
-from musetric_toolkit.separate_audio.ffmpeg.runner import runFfmpeg
+from musetric_toolkit.separate_audio.ffmpeg.runner import run_ffmpeg
 
 
-def readAudioFile(audioFilePath: str, sampleRate: int, channels: int) -> np.ndarray:
-    ffmpegCommand = [
+def read_audio_file(
+    audio_file_path: str,
+    sample_rate: int,
+    channels: int,
+) -> np.ndarray:
+    ffmpeg_command = [
         "ffmpeg",
         "-i",
-        audioFilePath,
+        audio_file_path,
         "-ar",
-        str(sampleRate),
+        str(sample_rate),
         "-ac",
         str(channels),
         "-f",
@@ -19,19 +23,19 @@ def readAudioFile(audioFilePath: str, sampleRate: int, channels: int) -> np.ndar
         "-",
     ]
 
-    rawBytes = runFfmpeg(
-        ffmpegCommand,
-        captureStdout=True,
+    raw_bytes = run_ffmpeg(
+        ffmpeg_command,
+        capture_stdout=True,
         context="ffmpeg failed to read audio",
     )
-    if not rawBytes:
+    if not raw_bytes:
         raise RuntimeError("ffmpeg produced no audio data")
 
-    samples = np.frombuffer(rawBytes, dtype=np.float32)
+    samples = np.frombuffer(raw_bytes, dtype=np.float32)
     if samples.size % channels != 0:
-        numFrames = samples.size // channels
-        samples = samples[: numFrames * channels]
-    numFrames = samples.size // channels
-    audioChannelsFirst = samples.reshape(numFrames, channels).T
+        num_frames = samples.size // channels
+        samples = samples[: num_frames * channels]
+    num_frames = samples.size // channels
+    audio_channels_first = samples.reshape(num_frames, channels).T
 
-    return np.ascontiguousarray(audioChannelsFirst, dtype=np.float32)
+    return np.ascontiguousarray(audio_channels_first, dtype=np.float32)

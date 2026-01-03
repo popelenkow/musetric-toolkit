@@ -6,7 +6,7 @@
 import logging
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as functional
 from torch import einsum, nn
 from torch.nn.attention import SDPBackend
 
@@ -27,7 +27,7 @@ def log_selected_backend(q, k, v, backends):
             for backend in backends:
                 try:
                     with torch.nn.attention.sdpa_kernel([backend]):
-                        F.scaled_dot_product_attention(
+                        functional.scaled_dot_product_attention(
                             q[:1], k[:1], v[:1], dropout_p=0.0
                         )
                     logging.debug(f"Selected SDPA backend: {backend.name}")
@@ -56,7 +56,7 @@ class Attend(nn.Module):
         log_selected_backend(q, k, v, backends)
 
         with torch.nn.attention.sdpa_kernel(backends):
-            return F.scaled_dot_product_attention(
+            return functional.scaled_dot_product_attention(
                 q, k, v, dropout_p=self.dropout if self.training else 0.0
             )
 

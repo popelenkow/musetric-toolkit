@@ -3,7 +3,7 @@ import subprocess
 import sys
 
 
-def runCommands(commands):
+def run_commands(commands):
     for cmd in commands:
         if isinstance(cmd, str):
             result = subprocess.run(cmd, shell=True)
@@ -20,7 +20,7 @@ def check():
         "uv run isort . --check-only",
         "uv run black . --check",
     ]
-    runCommands(commands)
+    run_commands(commands)
 
 
 def fix():
@@ -29,7 +29,7 @@ def fix():
         ["isort", "."],
         ["black", "."],
     ]
-    runCommands(commands)
+    run_commands(commands)
 
 
 if __name__ == "__main__":
