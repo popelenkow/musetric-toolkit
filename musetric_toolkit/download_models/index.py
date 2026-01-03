@@ -4,7 +4,7 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
-from musetricBackendWorkers.common import envs
+from musetric_toolkit.common import envs
 
 CHUNK_SIZE = 1024 * 1024
 PROGRESS_WIDTH = 40

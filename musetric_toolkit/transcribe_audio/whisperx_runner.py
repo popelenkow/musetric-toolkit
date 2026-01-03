@@ -6,8 +6,8 @@ import sys
 import warnings
 from contextlib import contextmanager
 
-from musetricBackendWorkers.common import envs
-from musetricBackendWorkers.transcribeAudio.progress import reportProgress
+from musetric_toolkit.common import envs
+from musetric_toolkit.transcribe_audio.progress import reportProgress
 
 
 def configure_warning_filters(log_level: str) -> None:
@@ -281,7 +281,7 @@ def transcribe_with_whisperx(audio_path: str, log_level: str = "info"):
     import torch
     import whisperx
 
-    from musetricBackendWorkers.separateAudio.systemInfo import (
+    from musetric_toolkit.separate_audio.system_info import (
         printAccelerationInfo,
         setupTorchOptimization,
     )

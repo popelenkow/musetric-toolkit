@@ -17,9 +17,9 @@ dependencies = [
 ]
 
 [project.scripts]
-musetric-separate = "musetricBackendWorkers.separateAudio.index:main"
-musetric-download-models = "musetricBackendWorkers.downloadModels.index:main"
-musetric-transcribe = "musetricBackendWorkers.transcribeAudio.index:main"
+musetric-separate = "musetric_toolkit.separate_audio.index:main"
+musetric-download-models = "musetric_toolkit.download_models.index:main"
+musetric-transcribe = "musetric_toolkit.transcribe_audio.index:main"
 
 [dependency-groups]
 check = [
@@ -33,7 +33,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["musetricBackendWorkers"]
+packages = ["musetric_toolkit"]
 
 [tool.black]
 exclude = ".venv"

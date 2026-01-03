@@ -2,11 +2,13 @@ import argparse
 import logging
 import sys
 
-from musetricBackendWorkers.common import envs
-from musetricBackendWorkers.common.logger import setupLogging
-from musetricBackendWorkers.common.modelFiles import ensureModelFiles
-from musetricBackendWorkers.separateAudio.bsRoformerSeparator import BSRoformerSeparator
-from musetricBackendWorkers.separateAudio.systemInfo import (
+from musetric_toolkit.common import envs
+from musetric_toolkit.common.logger import setupLogging
+from musetric_toolkit.common.model_files import ensureModelFiles
+from musetric_toolkit.separate_audio.bs_roformer_separator import (
+    BSRoformerSeparator,
+)
+from musetric_toolkit.separate_audio.system_info import (
     ensureFfmpeg,
     printAccelerationInfo,
     setupTorchOptimization,

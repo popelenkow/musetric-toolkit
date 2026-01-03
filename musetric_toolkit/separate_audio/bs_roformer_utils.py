@@ -4,7 +4,7 @@ from typing import Any
 import numpy as np
 import torch
 
-from musetricBackendWorkers.separateAudio.progress import reportProgress
+from musetric_toolkit.separate_audio.progress import reportProgress
 
 
 def updateProgress(current: int, total: int) -> None:
@@ -27,7 +27,7 @@ class AudioProcessor:
         self.config = config
 
     def demix(self, mix: np.ndarray, model) -> dict:
-        from musetricBackendWorkers.separateAudio import utils
+        from musetric_toolkit.separate_audio import utils
 
         originalMix = mix
         mixTensor = torch.from_numpy(mix).to(dtype=torch.float32, device=self.device)

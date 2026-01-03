@@ -5,14 +5,14 @@ import numpy as np
 import torch
 import yaml
 
-from musetricBackendWorkers.separateAudio import utils
-from musetricBackendWorkers.separateAudio.bsRoformerUtils import (
+from musetric_toolkit.separate_audio import utils
+from musetric_toolkit.separate_audio.bs_roformer_utils import (
     AudioProcessor,
     dictToNamespace,
 )
-from musetricBackendWorkers.separateAudio.ffmpeg.read import readAudioFile
-from musetricBackendWorkers.separateAudio.ffmpeg.write import writeAudioFile
-from musetricBackendWorkers.separateAudio.roformer.bsRoformer import BSRoformer
+from musetric_toolkit.separate_audio.ffmpeg.read import readAudioFile
+from musetric_toolkit.separate_audio.ffmpeg.write import writeAudioFile
+from musetric_toolkit.separate_audio.roformer.bs_roformer import BSRoformer
 
 
 class BSRoformerSeparator:

@@ -14,7 +14,7 @@ from rotary_embedding_torch import RotaryEmbedding
 from torch import nn
 from torch.nn import Module, ModuleList
 
-from musetricBackendWorkers.separateAudio.roformer.attend import Attend
+from musetric_toolkit.separate_audio.roformer.attend import Attend
 
 
 def exists(val):
