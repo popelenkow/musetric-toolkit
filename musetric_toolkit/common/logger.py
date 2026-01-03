@@ -2,11 +2,12 @@ import json
 import logging
 import re
 import sys
-from typing import Any
+from contextlib import suppress
+from typing import Any, ClassVar
 
 
 class JSONFormatter(logging.Formatter):
-    level_map = {
+    level_map: ClassVar[dict[str, str]] = {
         "DEBUG": "debug",
         "INFO": "info",
         "WARNING": "warn",
@@ -36,10 +37,7 @@ class StreamToLogger:
         self.errors = getattr(stream, "errors", "replace")
 
     def _should_suppress(self, line: str) -> bool:
-        for pattern in self._suppress_patterns:
-            if pattern.search(line):
-                return True
-        return False
+        return any(pattern.search(line) for pattern in self._suppress_patterns)
 
     def write(self, message: str | bytes) -> int:
         if not message:
@@ -60,10 +58,8 @@ class StreamToLogger:
             if line and not self._should_suppress(line):
                 self._logger.log(self._level, line)
             self._buffer = ""
-        try:
+        with suppress(Exception):
             self._stream.flush()
-        except Exception:
-            pass
 
     def isatty(self) -> bool:
         try:
@@ -134,4 +130,5 @@ def redirect_std_streams(
 
 
 def send_message(message: dict[str, Any]) -> None:
-    print(json.dumps(message), flush=True)
+    sys.stdout.write(json.dumps(message) + "\n")
+    sys.stdout.flush()

@@ -1,12 +1,30 @@
+import collections
 import inspect
 import logging
 import os
 import re
+import shutil
 import sys
+import typing
 import warnings
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
+from importlib.util import find_spec
+from pathlib import Path
+
+import omegaconf.base
+import omegaconf.dictconfig
+import omegaconf.listconfig
+import torch
+import whisperx
+from lightning.pytorch import __version__ as pl_version
+from lightning.pytorch.utilities.migration import migrate_checkpoint, pl_legacy_patch
+from packaging.version import Version
 
 from musetric_toolkit.common import envs
+from musetric_toolkit.separate_audio.system_info import (
+    print_acceleration_info,
+    setup_torch_optimization,
+)
 from musetric_toolkit.transcribe_audio.progress import report_progress
 
 
@@ -36,6 +54,7 @@ def configure_third_party_logging(log_level: str) -> None:
         return
     target_level = logging.ERROR if log_level == "error" else logging.WARNING
     prefixes = (
+        "huggingface_hub",
         "lightning",
         "pytorch_lightning",
         "pyannote",
@@ -74,13 +93,6 @@ def setup_environment(model_cache_dir: str, log_level: str) -> None:
 
 
 def configure_torch_serialization(torch) -> None:
-    import collections
-    import typing
-
-    import omegaconf.base
-    import omegaconf.dictconfig
-    import omegaconf.listconfig
-
     # Allowlist safe types used by OmegaConf/typing in PyTorch weights-only loads.
     torch.serialization.add_safe_globals(
         [
@@ -108,17 +120,6 @@ def configure_torch_serialization(torch) -> None:
 
 def maybe_upgrade_whisperx_checkpoint(torch) -> None:
     try:
-        import shutil
-        from importlib.util import find_spec
-        from pathlib import Path
-
-        from lightning.pytorch import __version__ as pl_version
-        from lightning.pytorch.utilities.migration import (
-            migrate_checkpoint,
-            pl_legacy_patch,
-        )
-        from packaging.version import Version
-
         spec = find_spec("whisperx")
         if not spec or not spec.origin:
             return
@@ -225,10 +226,8 @@ class ProgressLineInterceptor:
             if line and not self._maybe_report_progress(line):
                 self._stream.write(line)
             self._buffer = ""
-        try:
+        with suppress(Exception):
             self._stream.flush()
-        except Exception:
-            pass
 
     def isatty(self) -> bool:
         try:
@@ -277,14 +276,6 @@ def call_with_model_cache_dir(func, model_cache_dir: str, *args, **kwargs):
 def transcribe_with_whisperx(audio_path: str, log_level: str = "info"):
     model_cache_dir = ensure_model_cache_dir()
     setup_environment(model_cache_dir, log_level)
-
-    import torch
-    import whisperx
-
-    from musetric_toolkit.separate_audio.system_info import (
-        print_acceleration_info,
-        setup_torch_optimization,
-    )
 
     configure_torch_serialization(torch)
     configure_third_party_logging(log_level)

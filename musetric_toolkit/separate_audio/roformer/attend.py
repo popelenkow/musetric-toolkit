@@ -4,24 +4,22 @@
 # Modified for Musetric project
 
 import logging
+import warnings
 
 import torch
-import torch.nn.functional as functional
 from torch import einsum, nn
+from torch.nn import functional
 from torch.nn.attention import SDPBackend
 
-_backends_logged = False
+_backends_logged = {"value": False}
 
 
 def log_selected_backend(q, k, v, backends):
-    global _backends_logged
-    if not _backends_logged:
+    if not _backends_logged["value"]:
         backend_names = [b.name for b in backends]
         logging.debug(f"Available SDPA backends for attention: {backend_names}")
 
         # Try to determine which backend will be used by testing each one
-        import warnings
-
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             for backend in backends:
@@ -33,11 +31,14 @@ def log_selected_backend(q, k, v, backends):
                     logging.debug(f"Selected SDPA backend: {backend.name}")
                     break
                 except Exception:
+                    logging.debug(
+                        "Failed to probe SDPA backend %s", backend.name, exc_info=True
+                    )
                     continue
             else:
                 logging.debug("Selected SDPA backend: MATH (fallback)")
 
-        _backends_logged = True
+        _backends_logged["value"] = True
 
 
 class Attend(nn.Module):
@@ -64,10 +65,9 @@ class Attend(nn.Module):
         if self.flash:
             return self.flash_attn(q, k, v)
 
-        global _backends_logged
-        if not _backends_logged:
+        if not _backends_logged["value"]:
             logging.debug("Using manual attention computation (einsum-based)")
-            _backends_logged = True
+            _backends_logged["value"] = True
         scale = q.shape[-1] ** -0.5
         sim = einsum("b h i d, b h j d -> b h i j", q, k) * scale
         attn = self.attn_dropout(sim.softmax(dim=-1))

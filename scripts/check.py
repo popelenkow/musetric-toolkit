@@ -1,14 +1,13 @@
 import argparse
+import shlex
 import subprocess
 import sys
 
 
 def run_commands(commands):
     for cmd in commands:
-        if isinstance(cmd, str):
-            result = subprocess.run(cmd, shell=True)
-        else:
-            result = subprocess.run(cmd)
+        cmd_args = shlex.split(cmd) if isinstance(cmd, str) else cmd
+        result = subprocess.run(cmd_args, check=False)
 
         if result.returncode != 0:
             sys.exit(1)

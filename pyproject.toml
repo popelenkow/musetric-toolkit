@@ -47,7 +47,21 @@ exclude = [".venv"]
 line-length = 88
 
 [tool.ruff.lint]
-select = ["E", "W", "N", "F", "TID"]
+select = [
+    "B",
+    "C90",
+    "E",
+    "F",
+    "I",
+    "N",
+    "RUF",
+    "SIM",
+    "T20",
+    "TCH",
+    "TID",
+    "UP",
+    "W",
+]
 
 [tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"

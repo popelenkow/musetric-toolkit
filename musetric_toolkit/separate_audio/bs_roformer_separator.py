@@ -44,7 +44,7 @@ class BSRoformerSeparator:
         return torch.device("cpu")
 
     def _load_config(self):
-        with open(self.model_config_path, "r") as f:
+        with open(self.model_config_path) as f:
             return dict_to_namespace(yaml.load(f, Loader=yaml.FullLoader))
 
     def _load_model(self):

@@ -4,6 +4,7 @@ from typing import Any
 import numpy as np
 import torch
 
+from musetric_toolkit.separate_audio import utils
 from musetric_toolkit.separate_audio.progress import report_progress
 
 
@@ -27,8 +28,6 @@ class AudioProcessor:
         self.config = config
 
     def demix(self, mix: np.ndarray, model) -> dict:
-        from musetric_toolkit.separate_audio import utils
-
         original_mix = mix
         mix_tensor = torch.from_numpy(mix).to(dtype=torch.float32, device=self.device)
 
@@ -40,7 +39,7 @@ class AudioProcessor:
         )
 
         instruments_count = len(self.config.training.instruments)
-        result_shape = (instruments_count,) + mix_tensor.shape
+        result_shape = (instruments_count, *mix_tensor.shape)
         result = torch.zeros(result_shape, dtype=torch.float32, device=self.device)
         counter = torch.zeros(result_shape, dtype=torch.float32, device=self.device)
 
@@ -71,7 +70,7 @@ class AudioProcessor:
                 counter[..., start_pos : start_pos + length] += window_slice
 
         outputs = (result / counter.clamp(min=1e-10)).cpu().numpy()
-        sources = dict(zip(self.config.training.instruments, outputs))
+        sources = dict(zip(self.config.training.instruments, outputs, strict=False))
 
         primary_stem = self.config.training.target_instrument
         secondary_stem = "Instrumental" if primary_stem == "Vocals" else "Vocals"

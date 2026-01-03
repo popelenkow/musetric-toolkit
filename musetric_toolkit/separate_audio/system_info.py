@@ -1,12 +1,20 @@
 import logging
+import shutil
 import subprocess
+from contextlib import suppress
 
 import torch
 
 
 def ensure_ffmpeg() -> None:
+    ffmpeg_path = shutil.which("ffmpeg")
+    if not ffmpeg_path:
+        logging.error(
+            "FFmpeg not found in PATH. Please install and add ...\\ffmpeg\\bin to PATH."
+        )
+        raise FileNotFoundError("ffmpeg not found in PATH")
     try:
-        subprocess.run(["ffmpeg", "-version"], capture_output=True, check=True)
+        subprocess.run([ffmpeg_path, "-version"], capture_output=True, check=True)
     except Exception:
         logging.error(
             "FFmpeg not found in PATH. Please install and add ...\\ffmpeg\\bin to PATH."
@@ -31,10 +39,8 @@ def print_acceleration_info() -> None:
 
 
 def setup_torch_optimization() -> None:
-    try:
+    with suppress(Exception):
         torch.set_float32_matmul_precision("high")
-    except Exception:
-        pass
 
     try:
         torch.backends.cuda.enable_flash_sdp(True)
