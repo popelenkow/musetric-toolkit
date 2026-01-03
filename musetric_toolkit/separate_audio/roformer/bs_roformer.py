@@ -7,7 +7,7 @@ from functools import partial
 from typing import Callable, Optional, Tuple
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as functional
 from einops import pack, rearrange, unpack
 from einops.layers.torch import Rearrange
 from rotary_embedding_torch import RotaryEmbedding
@@ -33,7 +33,7 @@ class RMSNorm(Module):
 
     def forward(self, x):
         x = x.to(self.gamma.device)
-        return F.normalize(x, dim=-1) * self.scale * self.gamma
+        return functional.normalize(x, dim=-1) * self.scale * self.gamma
 
 
 class FeedForward(Module):
@@ -117,7 +117,7 @@ class LinearAttention(Module):
 
         q, k, v = self.to_qkv(x)
 
-        q, k = map(lambda t: F.normalize(t, dim=-1, p=2), (q, k))
+        q, k = map(lambda t: functional.normalize(t, dim=-1, p=2), (q, k))
         q = q * self.temperature.exp()
 
         out = self.attend(q, k, v)
@@ -203,7 +203,7 @@ class BandSplit(Module):
         )
 
 
-def MLP(dim_in, dim_out, dim_hidden, depth, activation):
+def mlp(dim_in, dim_out, dim_hidden, depth, activation):
     dim_hidden = default(dim_hidden, dim_in)
     dims = (dim_in, *((dim_hidden,) * (depth - 1)), dim_out)
 
@@ -226,7 +226,7 @@ class MaskEstimator(Module):
         for dim_in in dim_inputs:
             self.to_freqs.append(
                 nn.Sequential(
-                    MLP(
+                    mlp(
                         dim,
                         dim_in * 2,
                         dim_hidden=dim_hidden,
@@ -347,9 +347,10 @@ class BSRoformer(Module):
         ).shape[1]
 
         assert len(freqs_per_bands) > 1
-        assert (
-            sum(freqs_per_bands) == freqs
-        ), f"the number of freqs in the bands must equal {freqs} based on the STFT settings, but got {sum(freqs_per_bands)}"
+        assert sum(freqs_per_bands) == freqs, (
+            "the number of freqs in the bands must equal "
+            f"{freqs} based on the STFT settings, but got {sum(freqs_per_bands)}"
+        )
 
         freqs_per_bands_with_complex = tuple(
             2 * f * self.audio_channels for f in freqs_per_bands
@@ -388,9 +389,11 @@ class BSRoformer(Module):
             raw_audio = rearrange(raw_audio, "b t -> b 1 t")
 
         channels = raw_audio.shape[1]
-        assert (not self.stereo and channels == 1) or (
-            self.stereo and channels == 2
-        ), "stereo needs to be set to True if passing in audio signal that is stereo (channel dimension of 2). also need to be False if mono (channel dimension of 1)"
+        assert (not self.stereo and channels == 1) or (self.stereo and channels == 2), (
+            "stereo needs to be set to True if passing in audio signal that is "
+            "stereo (channel dimension of 2). also need to be False if mono "
+            "(channel dimension of 1)"
+        )
 
         raw_audio, batch_audio_channel_packed_shape = pack([raw_audio], "* t")
 
@@ -471,7 +474,7 @@ class BSRoformer(Module):
 
         target = target[..., : recon_audio.shape[-1]]
 
-        loss = F.l1_loss(recon_audio, target)
+        loss = functional.l1_loss(recon_audio, target)
 
         multi_stft_resolution_loss = 0.0
 
@@ -484,15 +487,16 @@ class BSRoformer(Module):
                 **self.multi_stft_kwargs,
             )
 
-            recon_Y = torch.stft(
+            recon_y = torch.stft(
                 rearrange(recon_audio, "... s t -> (... s) t"), **res_stft_kwargs
             )
-            target_Y = torch.stft(
+            target_y = torch.stft(
                 rearrange(target, "... s t -> (... s) t"), **res_stft_kwargs
             )
 
-            multi_stft_resolution_loss = multi_stft_resolution_loss + F.l1_loss(
-                recon_Y, target_Y
+            multi_stft_resolution_loss += functional.l1_loss(
+                recon_y,
+                target_y,
             )
 
         weighted_multi_resolution_loss = (

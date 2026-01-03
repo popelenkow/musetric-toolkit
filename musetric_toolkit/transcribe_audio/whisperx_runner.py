@@ -7,7 +7,7 @@ import warnings
 from contextlib import contextmanager
 
 from musetric_toolkit.common import envs
-from musetric_toolkit.transcribe_audio.progress import reportProgress
+from musetric_toolkit.transcribe_audio.progress import report_progress
 
 
 def configure_warning_filters(log_level: str) -> None:
@@ -171,7 +171,7 @@ class ProgressTracker:
         ):
             return
         self._last = progress
-        reportProgress(progress)
+        report_progress(progress)
 
     def report_percent(self, percent: float) -> None:
         self.report_fraction(percent / 100.0)
@@ -282,15 +282,15 @@ def transcribe_with_whisperx(audio_path: str, log_level: str = "info"):
     import whisperx
 
     from musetric_toolkit.separate_audio.system_info import (
-        printAccelerationInfo,
-        setupTorchOptimization,
+        print_acceleration_info,
+        setup_torch_optimization,
     )
 
     configure_torch_serialization(torch)
     configure_third_party_logging(log_level)
     maybe_upgrade_whisperx_checkpoint(torch)
-    printAccelerationInfo()
-    setupTorchOptimization()
+    print_acceleration_info()
+    setup_torch_optimization()
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     compute_type = "float16" if device == "cuda" else "int8"
@@ -337,8 +337,8 @@ def transcribe_with_whisperx(audio_path: str, log_level: str = "info"):
             )
         segments = aligned.get("segments", segments)
         detected_language = aligned.get("language", detected_language)
-    except Exception as alignError:
-        logging.warning("Alignment skipped: %s", alignError)
+    except Exception as align_error:
+        logging.warning("Alignment skipped: %s", align_error)
     finally:
         progress_tracker.finalize()
 

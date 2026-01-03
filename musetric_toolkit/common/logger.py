@@ -6,12 +6,17 @@ from typing import Any
 
 
 class JSONFormatter(logging.Formatter):
-    levelMap = {"DEBUG": "debug", "INFO": "info", "WARNING": "warn", "ERROR": "error"}
+    level_map = {
+        "DEBUG": "debug",
+        "INFO": "info",
+        "WARNING": "warn",
+        "ERROR": "error",
+    }
 
     def format(self, record):
-        mappedLevel = self.levelMap.get(record.levelname, "info")
-        logEntry = {"level": mappedLevel, "message": record.getMessage()}
-        return json.dumps(logEntry)
+        mapped_level = self.level_map.get(record.levelname, "info")
+        log_entry = {"level": mapped_level, "message": record.getMessage()}
+        return json.dumps(log_entry)
 
 
 class StreamToLogger:
@@ -76,32 +81,37 @@ class StreamToLogger:
         return True
 
 
-def setupLogging(level: str):
-    levelMap = {"debug": "DEBUG", "info": "INFO", "warn": "WARNING", "error": "ERROR"}
+def setup_logging(level: str):
+    level_map = {
+        "debug": "DEBUG",
+        "info": "INFO",
+        "warn": "WARNING",
+        "error": "ERROR",
+    }
 
     handler = logging.StreamHandler(sys.__stderr__)
     handler.setFormatter(JSONFormatter())
 
-    rootLogger = logging.getLogger()
-    pythonLevel = levelMap.get(level, "INFO")
-    numericLevel = getattr(logging, pythonLevel)
-    rootLogger.setLevel(numericLevel)
-    handler.setLevel(numericLevel)
+    root_logger = logging.getLogger()
+    python_level = level_map.get(level, "INFO")
+    numeric_level = getattr(logging, python_level)
+    root_logger.setLevel(numeric_level)
+    handler.setLevel(numeric_level)
 
-    for existingHandler in rootLogger.handlers[:]:
-        rootLogger.removeHandler(existingHandler)
+    for existing_handler in root_logger.handlers[:]:
+        root_logger.removeHandler(existing_handler)
 
-    rootLogger.addHandler(handler)
+    root_logger.addHandler(handler)
 
     logging.captureWarnings(True)
 
 
-def redirectStdStreams(
-    stdoutLevel: str = "info",
-    stderrLevel: str = "warn",
+def redirect_std_streams(
+    stdout_level: str = "info",
+    stderr_level: str = "warn",
     suppress_patterns: list[re.Pattern[str]] | None = None,
 ) -> None:
-    levelMap = {
+    level_map = {
         "debug": logging.DEBUG,
         "info": logging.INFO,
         "warn": logging.WARNING,
@@ -110,18 +120,18 @@ def redirectStdStreams(
     if not isinstance(sys.stdout, StreamToLogger):
         sys.stdout = StreamToLogger(
             logging.getLogger("stdout"),
-            levelMap.get(stdoutLevel, logging.INFO),
+            level_map.get(stdout_level, logging.INFO),
             sys.__stdout__,
             suppress_patterns=suppress_patterns,
         )
     if not isinstance(sys.stderr, StreamToLogger):
         sys.stderr = StreamToLogger(
             logging.getLogger("stderr"),
-            levelMap.get(stderrLevel, logging.WARNING),
+            level_map.get(stderr_level, logging.WARNING),
             sys.__stderr__,
             suppress_patterns=suppress_patterns,
         )
 
 
-def sendMessage(message: dict[str, Any]) -> None:
+def send_message(message: dict[str, Any]) -> None:
     print(json.dumps(message), flush=True)

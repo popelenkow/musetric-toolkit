@@ -4,7 +4,7 @@ import re
 import sys
 from pathlib import Path
 
-from musetric_toolkit.common.logger import redirectStdStreams, setupLogging
+from musetric_toolkit.common.logger import redirect_std_streams, setup_logging
 from musetric_toolkit.transcribe_audio.cli import parse_arguments
 from musetric_toolkit.transcribe_audio.response_builder import (
     build_payload_segments,
@@ -27,8 +27,8 @@ def build_stream_suppression_patterns(
 
 def main() -> None:
     args = parse_arguments()
-    setupLogging(args.log_level)
-    redirectStdStreams(
+    setup_logging(args.log_level)
+    redirect_std_streams(
         suppress_patterns=build_stream_suppression_patterns(args.log_level)
     )
 

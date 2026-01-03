@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 
-def ensureModelFiles(
+def ensure_model_files(
     model_checkpoint_path: Path,
     config_path: Path,
 ) -> None:
