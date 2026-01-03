@@ -1,6 +1,6 @@
 import logging
 import subprocess
-from typing import Iterable, Sequence
+from collections.abc import Iterable, Sequence
 
 error_keywords: tuple[str, ...] = (
     "error",

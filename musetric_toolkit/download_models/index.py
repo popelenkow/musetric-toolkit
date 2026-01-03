@@ -1,17 +1,20 @@
 import logging
 import sys
 from pathlib import Path
+from typing import ClassVar
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
 from urllib.request import urlopen
 
 from musetric_toolkit.common import envs
 
+KIB = 1024
 CHUNK_SIZE = 1024 * 1024
 PROGRESS_WIDTH = 40
 
 
 class ColorFormatter(logging.Formatter):
-    COLORS = {
+    COLORS: ClassVar[dict[int, str]] = {
         logging.DEBUG: "\033[36m",
         logging.INFO: "\033[32m",
         logging.WARNING: "\033[33m",
@@ -42,10 +45,17 @@ def format_bytes(value: int) -> str:
     units = ("B", "KB", "MB", "GB", "TB")
     size = float(value)
     for unit in units:
-        if size < 1024 or unit == units[-1]:
+        if size < KIB or unit == units[-1]:
             return f"{size:.1f} {unit}"
-        size /= 1024
+        size /= KIB
     return f"{value} B"
+
+
+def _validate_url(url: str) -> None:
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        scheme = parsed.scheme or "<missing>"
+        raise ValueError(f"Unsupported URL scheme: {scheme}")
 
 
 def download_file(url: str, destination: Path, force: bool, label: str) -> None:
@@ -53,6 +63,7 @@ def download_file(url: str, destination: Path, force: bool, label: str) -> None:
         return
 
     destination.parent.mkdir(parents=True, exist_ok=True)
+    _validate_url(url)
 
     try:
         with urlopen(url) as response, destination.open("wb") as target:

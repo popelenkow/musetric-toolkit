@@ -3,16 +3,16 @@
 # License: MIT
 # Modified for Musetric project
 
+from collections.abc import Callable
 from functools import partial
-from typing import Callable, Optional, Tuple
+from itertools import pairwise
 
 import torch
-import torch.nn.functional as functional
 from einops import pack, rearrange, unpack
 from einops.layers.torch import Rearrange
 from rotary_embedding_torch import RotaryEmbedding
 from torch import nn
-from torch.nn import Module, ModuleList
+from torch.nn import Module, ModuleList, functional
 
 from musetric_toolkit.separate_audio.roformer.attend import Attend
 
@@ -182,7 +182,7 @@ class Transformer(Module):
 
 
 class BandSplit(Module):
-    def __init__(self, dim, dim_inputs: Tuple[int, ...]):
+    def __init__(self, dim, dim_inputs: tuple[int, ...]):
         super().__init__()
         self.dim_inputs = dim_inputs
         self.to_features = ModuleList([])
@@ -197,7 +197,7 @@ class BandSplit(Module):
         return torch.stack(
             [
                 to_feature(split_input)
-                for split_input, to_feature in zip(x, self.to_features)
+                for split_input, to_feature in zip(x, self.to_features, strict=False)
             ],
             dim=-2,
         )
@@ -208,7 +208,7 @@ def mlp(dim_in, dim_out, dim_hidden, depth, activation):
     dims = (dim_in, *((dim_hidden,) * (depth - 1)), dim_out)
 
     net = []
-    for i, (in_dim, out_dim) in enumerate(zip(dims[:-1], dims[1:])):
+    for i, (in_dim, out_dim) in enumerate(pairwise(dims)):
         net.append(nn.Linear(in_dim, out_dim))
         if i < len(dims) - 2:
             net.append(activation())
@@ -217,7 +217,7 @@ def mlp(dim_in, dim_out, dim_hidden, depth, activation):
 
 
 class MaskEstimator(Module):
-    def __init__(self, dim, dim_inputs: Tuple[int, ...], depth, mlp_expansion_factor):
+    def __init__(self, dim, dim_inputs: tuple[int, ...], depth, mlp_expansion_factor):
         super().__init__()
         self.dim_inputs = dim_inputs
         self.to_freqs = ModuleList([])
@@ -240,7 +240,11 @@ class MaskEstimator(Module):
     def forward(self, x):
         x = x.unbind(dim=-2)
         return torch.cat(
-            [mlp(band_features) for band_features, mlp in zip(x, self.to_freqs)], dim=-1
+            [
+                mlp(band_features)
+                for band_features, mlp in zip(x, self.to_freqs, strict=False)
+            ],
+            dim=-1,
         )
 
 
@@ -256,7 +260,7 @@ class BSRoformer(Module):
         time_transformer_depth=2,
         freq_transformer_depth=2,
         linear_transformer_depth=0,
-        freqs_per_bands: Tuple[int, ...],
+        freqs_per_bands: tuple[int, ...],
         dim_head=64,
         heads=8,
         attn_dropout=0.0,
@@ -267,10 +271,10 @@ class BSRoformer(Module):
         stft_hop_length=512,
         stft_win_length=2048,
         stft_normalized=False,
-        stft_window_fn: Optional[Callable] = None,
+        stft_window_fn: Callable | None = None,
         mask_estimator_depth=2,
         multi_stft_resolution_loss_weight=1.0,
-        multi_stft_resolutions_window_sizes: Tuple[int, ...],
+        multi_stft_resolutions_window_sizes: tuple[int, ...],
         multi_stft_hop_size=147,
         multi_stft_normalized=False,
         multi_stft_window_fn: Callable = torch.hann_window,
@@ -381,7 +385,7 @@ class BSRoformer(Module):
 
     def forward(self, raw_audio, target, return_loss_breakdown):
         original_device = raw_audio.device
-        x_is_mps = True if original_device.type == "mps" else False
+        x_is_mps = original_device.type == "mps"
 
         device = raw_audio.device
 
