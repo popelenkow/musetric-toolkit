@@ -66,7 +66,7 @@ def download_file(url: str, destination: Path, force: bool, label: str) -> None:
     _validate_url(url)
 
     try:
-        with urlopen(url) as response, destination.open("wb") as target:
+        with urlopen(url) as response, destination.open("wb") as target:  # noqa: S310
             total = int(response.headers.get("Content-Length", "0") or 0)
             downloaded = 0
             for chunk in iter(lambda: response.read(CHUNK_SIZE), b""):
