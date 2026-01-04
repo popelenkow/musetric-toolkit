@@ -4,14 +4,14 @@ from typing import Any
 import numpy as np
 import torch
 
+from musetric_toolkit.common.logger import send_message
 from musetric_toolkit.separate_audio import utils
-from musetric_toolkit.separate_audio.progress import report_progress
 
 
 def update_progress(current: int, total: int) -> None:
     if total > 0:
         progress = min(current / total, 1.0)
-        report_progress(progress)
+        send_message({"type": "progress", "progress": progress})
 
 
 def dict_to_namespace(data: Any) -> Any:

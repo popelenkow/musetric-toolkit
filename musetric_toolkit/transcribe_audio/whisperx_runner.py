@@ -21,11 +21,11 @@ from lightning.pytorch.utilities.migration import migrate_checkpoint, pl_legacy_
 from packaging.version import Version
 
 from musetric_toolkit.common import envs
+from musetric_toolkit.common.logger import send_message
 from musetric_toolkit.separate_audio.system_info import (
     print_acceleration_info,
     setup_torch_optimization,
 )
-from musetric_toolkit.transcribe_audio.progress import report_progress
 
 
 def configure_warning_filters(log_level: str) -> None:
@@ -172,7 +172,7 @@ class ProgressTracker:
         ):
             return
         self._last = progress
-        report_progress(progress)
+        send_message({"type": "progress", "progress": progress})
 
     def report_percent(self, percent: float) -> None:
         self.report_fraction(percent / 100.0)
