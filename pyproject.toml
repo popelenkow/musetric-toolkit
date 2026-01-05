@@ -18,7 +18,6 @@ dependencies = [
 
 [project.scripts]
 musetric-separate = "musetric_toolkit.separate_audio.index:main"
-musetric-download-models = "musetric_toolkit.download_models.index:main"
 musetric-transcribe = "musetric_toolkit.transcribe_audio.index:main"
 
 [dependency-groups]

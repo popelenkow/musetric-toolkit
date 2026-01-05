@@ -4,25 +4,21 @@ Standalone CLI tool extracted from [Musetric](https://github.com/popelenkow/muse
 
 ## Installation
 
-Install the package directly from the latest GitHub release, then download the default BSRoformer checkpoints:
+Install the package directly from the latest GitHub release.
 ```bash
 uv tool install --python 3.13.2 \
   --default-index https://pypi.org/simple \
   --index https://download.pytorch.org/whl/cpu \  # --index https://download.pytorch.org/whl/cu129 \
   --index-strategy unsafe-best-match \
   https://github.com/popelenkow/musetric-toolkit/releases/download/v0.0.4/musetric_toolkit-0.0.4-py3-none-any.whl
-
-musetric-download-models
 ```
 
-For local development, install the CLI in editable mode with [`uv`](https://github.com/astral-sh/uv), then download the BSRoformer checkpoints and configs:
+For local development, install the CLI in editable mode.
 ```bash
 uv tool install --python 3.13.2 --editable . \
   --default-index https://pypi.org/simple \
   --index https://download.pytorch.org/whl/cpu \  # --index https://download.pytorch.org/whl/cu129 \
   --index-strategy unsafe-best-match
-
-musetric-download-models
 ```
 
 ## CLI Usage
