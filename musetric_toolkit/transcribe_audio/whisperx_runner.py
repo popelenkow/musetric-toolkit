@@ -149,7 +149,7 @@ def maybe_upgrade_whisperx_checkpoint(torch) -> None:
 
 
 DEFAULT_MODEL_NAME = "large-v3"
-DEFAULT_BATCH_SIZE = 4
+DEFAULT_BATCH_SIZE = 1
 DEFAULT_LANGUAGE = None
 
 
