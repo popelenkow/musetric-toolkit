@@ -130,5 +130,5 @@ def redirect_std_streams(
 
 
 def send_message(message: dict[str, Any]) -> None:
-    sys.stdout.write(json.dumps(message) + "\n")
-    sys.stdout.flush()
+    sys.__stdout__.write(json.dumps(message) + "\n")
+    sys.__stdout__.flush()

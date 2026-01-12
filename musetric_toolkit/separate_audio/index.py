@@ -3,7 +3,7 @@ import logging
 import sys
 
 from musetric_toolkit.common import envs
-from musetric_toolkit.common.logger import setup_logging
+from musetric_toolkit.common.logger import redirect_std_streams, setup_logging
 from musetric_toolkit.common.model_files import ensure_model_files
 from musetric_toolkit.separate_audio.bs_roformer_separator import BSRoformerSeparator
 from musetric_toolkit.separate_audio.system_info import (
@@ -53,6 +53,7 @@ def main() -> None:
     args = parse_arguments()
 
     setup_logging(args.log_level)
+    redirect_std_streams()
 
     try:
         ensure_model_files(
