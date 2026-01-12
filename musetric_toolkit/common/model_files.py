@@ -34,13 +34,13 @@ def _download_file(url: str, destination: Path, label: str) -> None:
                     "file": destination.name,
                     "downloaded": 0,
                     "total": total,
-                    "status": "active",
+                    "status": "processing",
                 }
             )
             for chunk in iter(lambda: response.read(CHUNK_SIZE), b""):
                 target.write(chunk)
                 downloaded += len(chunk)
-                status = "done" if downloaded >= total else "active"
+                status = "done" if downloaded >= total else "processing"
                 send_message(
                     {
                         "type": "download",
