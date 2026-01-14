@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
@@ -77,6 +76,4 @@ def ensure_model_files(
             )
             continue
 
-        logging.info("Downloading %s...", label)
         _download_file(url, path, label)
-        logging.info("%s file downloaded to %s", label, path)

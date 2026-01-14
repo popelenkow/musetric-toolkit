@@ -1,7 +1,5 @@
 import collections
-import inspect
 import logging
-import os
 import re
 import shutil
 import sys
@@ -20,11 +18,13 @@ from lightning.pytorch import __version__ as pl_version
 from lightning.pytorch.utilities.migration import migrate_checkpoint, pl_legacy_patch
 from packaging.version import Version
 
-from musetric_toolkit.common import envs
 from musetric_toolkit.common.logger import send_message
 from musetric_toolkit.separate_audio.system_info import (
     print_acceleration_info,
     setup_torch_optimization,
+)
+from musetric_toolkit.transcribe_audio.download_progress import (
+    intercept_hf_downloads,
 )
 
 
@@ -82,17 +82,7 @@ def configure_third_party_logging(log_level: str) -> None:
                 break
 
 
-def setup_environment(model_cache_dir: str, log_level: str) -> None:
-    os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
-    os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
-    os.environ.setdefault("HF_HOME", model_cache_dir)
-    os.environ.setdefault("HF_HUB_CACHE", model_cache_dir)
-    os.environ.setdefault("HUGGINGFACE_HUB_CACHE", model_cache_dir)
-    configure_warning_filters(log_level)
-    configure_third_party_logging(log_level)
-
-
-def configure_torch_serialization(torch) -> None:
+def configure_torch_serialization() -> None:
     # Allowlist safe types used by OmegaConf/typing in PyTorch weights-only loads.
     torch.serialization.add_safe_globals(
         [
@@ -118,7 +108,7 @@ def configure_torch_serialization(torch) -> None:
     torch.serialization.load = torch_load_unrestricted
 
 
-def maybe_upgrade_whisperx_checkpoint(torch) -> None:
+def maybe_upgrade_whisperx_checkpoint() -> None:
     try:
         spec = find_spec("whisperx")
         if not spec or not spec.origin:
@@ -146,11 +136,6 @@ def maybe_upgrade_whisperx_checkpoint(torch) -> None:
         torch.save(checkpoint, checkpoint_path)
     except Exception as error:
         logging.debug("WhisperX checkpoint upgrade skipped: %s", error)
-
-
-DEFAULT_MODEL_NAME = "large-v3"
-DEFAULT_BATCH_SIZE = 1
-DEFAULT_LANGUAGE = None
 
 
 _PROGRESS_PATTERN = re.compile(r"^Progress:\s+([0-9]+(?:\.[0-9]+)?)%")
@@ -257,49 +242,30 @@ def intercept_progress_lines(tracker: ProgressTracker):
         wrapper.flush()
 
 
-def ensure_model_cache_dir() -> str:
-    envs.models_dir.mkdir(parents=True, exist_ok=True)
-    return str(envs.models_dir)
-
-
-def call_with_model_cache_dir(func, model_cache_dir: str, *args, **kwargs):
-    params = inspect.signature(func).parameters
-    if "download_root" in params:
-        kwargs["download_root"] = model_cache_dir
-    elif "model_dir" in params:
-        kwargs["model_dir"] = model_cache_dir
-    elif "cache_dir" in params:
-        kwargs["cache_dir"] = model_cache_dir
-    return func(*args, **kwargs)
-
-
 def transcribe_with_whisperx(audio_path: str, log_level: str = "info"):
-    model_cache_dir = ensure_model_cache_dir()
-    setup_environment(model_cache_dir, log_level)
-
-    configure_torch_serialization(torch)
+    configure_warning_filters(log_level)
     configure_third_party_logging(log_level)
-    maybe_upgrade_whisperx_checkpoint(torch)
+    configure_torch_serialization()
+    maybe_upgrade_whisperx_checkpoint()
     print_acceleration_info()
     setup_torch_optimization()
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     compute_type = "float16" if device == "cuda" else "int8"
-    model = call_with_model_cache_dir(
-        whisperx.load_model,
-        model_cache_dir,
-        DEFAULT_MODEL_NAME,
-        device,
-        compute_type=compute_type,
-    )
+    with intercept_hf_downloads("WhisperX model"):
+        model = whisperx.load_model(
+            "large-v3",
+            device,
+            compute_type=compute_type,
+        )
     audio = whisperx.load_audio(audio_path)
     progress_tracker = ProgressTracker()
     progress_tracker.report_fraction(0.0)
     with intercept_progress_lines(progress_tracker):
         result = model.transcribe(
             audio,
-            batch_size=DEFAULT_BATCH_SIZE,
-            language=DEFAULT_LANGUAGE,
+            batch_size=1,
+            language=None,
             print_progress=True,
             combined_progress=True,
         )
@@ -309,12 +275,11 @@ def transcribe_with_whisperx(audio_path: str, log_level: str = "info"):
     detected_language = result.get("language")
 
     try:
-        align_model, metadata = call_with_model_cache_dir(
-            whisperx.load_align_model,
-            model_cache_dir,
-            language_code=detected_language,
-            device=device,
-        )
+        with intercept_hf_downloads("WhisperX alignment model"):
+            align_model, metadata = whisperx.load_align_model(
+                language_code=detected_language,
+                device=device,
+            )
         with intercept_progress_lines(progress_tracker):
             aligned = whisperx.align(
                 segments,
