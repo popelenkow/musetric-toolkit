@@ -36,19 +36,13 @@ def main() -> None:
     )
 
     try:
-        segments, language = transcribe_with_whisperx(args.audio_path, args.log_level)
+        segments, _language = transcribe_with_whisperx(args.audio_path, args.log_level)
         lyric_segments = split_segments_by_lyrics(segments)
         payload_segments = build_payload_segments(lyric_segments)
-        payload = {
-            "type": "result",
-            "language": language,
-            "segments": payload_segments,
-            "lines": payload_segments,
-        }
         output_path = Path(args.result_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with output_path.open("w", encoding="utf-8") as result_file:
-            json.dump(payload, result_file)
+            json.dump(payload_segments, result_file)
     except Exception as error:
         logging.error("Audio transcription failed: %s", error)
         sys.exit(1)
