@@ -6,6 +6,9 @@ from pathlib import Path
 
 from musetric_toolkit.common.logger import redirect_std_streams, setup_logging
 from musetric_toolkit.transcribe_audio.cli import parse_arguments
+from musetric_toolkit.transcribe_audio.lyric_splitter import (
+    split_segments_by_lyrics,
+)
 from musetric_toolkit.transcribe_audio.response_builder import (
     build_payload_segments,
 )
@@ -34,7 +37,8 @@ def main() -> None:
 
     try:
         segments, language = transcribe_with_whisperx(args.audio_path, args.log_level)
-        payload_segments = build_payload_segments(segments)
+        lyric_segments = split_segments_by_lyrics(segments)
+        payload_segments = build_payload_segments(lyric_segments)
         payload = {
             "type": "result",
             "language": language,
