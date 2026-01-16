@@ -257,6 +257,11 @@ def transcribe_with_whisperx(audio_path: str, log_level: str = "info"):
             "large-v3",
             device,
             compute_type=compute_type,
+            vad_method="pyannote",
+            vad_options={
+                "vad_onset": 0.65,
+                "vad_offset": 0.50,
+            },
         )
     audio = whisperx.load_audio(audio_path)
     progress_tracker = ProgressTracker()
@@ -266,6 +271,7 @@ def transcribe_with_whisperx(audio_path: str, log_level: str = "info"):
             audio,
             batch_size=1,
             language=None,
+            chunk_size=10,
             print_progress=True,
             combined_progress=True,
         )
