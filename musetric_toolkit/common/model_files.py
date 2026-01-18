@@ -77,3 +77,21 @@ def ensure_model_files(
             continue
 
         _download_file(url, path, label)
+
+
+def ensure_model_file(url: str, path: Path, label: str) -> None:
+    if path.exists():
+        size = path.stat().st_size
+        send_message(
+            {
+                "type": "download",
+                "label": label,
+                "file": path.name,
+                "downloaded": size,
+                "total": size,
+                "status": "cached",
+            }
+        )
+        return
+
+    _download_file(url, path, label)

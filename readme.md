@@ -26,10 +26,12 @@ uv tool install --python 3.13.2 --editable . \
 ```bash
 musetric-separate \
   --source-path /path/to/input.wav \  # input audio file
-  --vocal-path /path/to/output-vocals.wav \  # output path for the vocal track
+  --lead-path /path/to/output-lead.wav \  # output path for the lead vocal track
+  --backing-path /path/to/output-backing.wav \  # output path for the backing vocal track
   --instrumental-path /path/to/output-instrumental.wav \  # output path for the instrumental track
   --sample-rate 44100 \  # target sample rate (e.g. 44100)
-  --output-format wav  # export format (e.g. wav)
+  --output-format wav \  # export format (e.g. wav)
+  --log-level info  # debug|info|warn|error (default: info)
 ```
 
 ```bash

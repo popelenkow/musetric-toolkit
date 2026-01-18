@@ -8,12 +8,6 @@ from musetric_toolkit.common.logger import send_message
 from musetric_toolkit.separate_audio import utils
 
 
-def update_progress(current: int, total: int) -> None:
-    if total > 0:
-        progress = min(current / total, 1.0)
-        send_message({"type": "progress", "progress": progress})
-
-
 def dict_to_namespace(data: Any) -> Any:
     if isinstance(data, dict):
         return Namespace(**{k: dict_to_namespace(v) for k, v in data.items()})
@@ -49,7 +43,8 @@ class AudioProcessor:
         with torch.no_grad():
             for step_idx, i in enumerate(range(0, mix_tensor.shape[1], step_size)):
                 if step_idx % progress_interval == 0:
-                    update_progress(step_idx, total_steps)
+                    progress = step_idx / total_steps
+                    send_message({"type": "progress", "progress": progress / 2})
 
                 if i + chunk_size > mix_tensor.shape[1]:
                     part = mix_tensor[:, -chunk_size:]
